@@ -71,7 +71,11 @@ export class TasksListComponent {
 
 ## Injections
 
-**Root Enviroment Injector (classic), Element Injector, Module Injector, Platform Enviroment Injector (error)**
+Angular has injectors to register values that can be requested by components, directives, services.
+
+**null injector above the platform (error generating if no values)**
+
+**Root Enviroment Injector (classic), Element Injector(The first one to be called), Module Injector, Platform Enviroment Injector (Provide value for multiple apps in 1 Angular project)**
 
 We can provide services without @Injectable, but with providers in main.ts:
 

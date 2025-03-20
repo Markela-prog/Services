@@ -16,6 +16,7 @@ export class TasksListComponent {
   private tasksService = inject(TasksService);
   private selectedFilter = signal<string>('all');
   taskStatusOptions = inject(TASK_STATUS_OPTIONS);
+  
   tasks = computed(() => {
     switch (this.selectedFilter()) {
       case 'open':
