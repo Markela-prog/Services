@@ -66,3 +66,37 @@ export class TasksListComponent {
   }
 }
 ```
+
+<br>
+
+## Injections
+
+**Root Enviroment Injector (classic), Element Injector, Module Injector, Platform Enviroment Injector (error)**
+
+We can provide services without @Injectable, but with providers in main.ts:
+
+```
+bootstrapApplication(AppComponent, {
+    providers: [TasksService]
+}).catch((err) => console.error(err));
+```
+
+The difference is that config object does not allow for tree shaking of the service. Which means that Angular tries to optimize your code as much as possible once you prepared for deployment and during optimization process it tries to throw away any code thats not being use or not needed initially when app starts.
+
+<hr>
+
+We can provide services via Element Injector:
+
+```
+@Component({
+  selector: 'app-tasks',
+  standalone: true,
+  templateUrl: './tasks.component.html',
+  imports: [NewTaskComponent, TasksListComponent],
+  providers: [TasksService]
+})
+```
+
+***Important thing, that if using Element Injector, the service is availabe only in the that component and its child components***
+
+***Every instance of the component will get its own service instance***
