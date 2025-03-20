@@ -100,3 +100,51 @@ We can provide services via Element Injector:
 ***Important thing, that if using Element Injector, the service is availabe only in the that component and its child components***
 
 ***Every instance of the component will get its own service instance***
+
+<hr>
+
+You can inject services into service:
+
+```
+@Injectable({
+  providedIn: 'root',
+})
+export class LoggingService {
+  log(message: string) {
+    const timeStamp = new Date().toLocaleTimeString();
+    console.log(`[${timeStamp}]: ${message}`);
+  }
+}
+```
+
+and use it in another service
+
+```
+export class TasksService {
+  private tasks = signal<Task[]>([]);
+  private loggingService = inject(LoggingService);
+
+  allTasks = this.tasks.asReadonly();
+
+  addTask(taskData: { title: string; description: string }) {
+    const newTask: Task = {
+      ...taskData,
+      id: Math.random().toString(),
+      status: 'OPEN',
+    };
+    this.tasks.update((oldTasks) => [...oldTasks, newTask]);
+    this.loggingService.log('ADDED TASK WITH TITLE ' + taskData.title);
+  }
+
+  updateTasksService(taskId: string, newStatus: TaskStatus) {
+    this.tasks.update((oldTasks) =>
+      oldTasks.map((task) =>
+        task.id === taskId ? { ...task, status: newStatus } : task
+      )
+    );
+    this.loggingService.log('CHANGED TASK STATUS TO ' + newStatus);
+  }
+}
+```
+
+***YOU CANNOT USE ELEMENT INJECTION FOR INJECTING SERVICE INTO SERVICE, BECAUSE ONLY COMPONENTS AND DIRECTIVE DO REACH OUT TO ELEMENT INJECTOR***
