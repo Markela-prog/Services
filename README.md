@@ -1,27 +1,68 @@
 # ServicesDeepDive
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.0.0.
+The important thing, is that we want to use same service instance for multiple components, so we cannot create a separate instances in each component, instead we use Dependency Injection
 
-## Development server
+## Dependency Injection
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+You do not create service instances yourself - instead, you request them from Angular
 
-## Code scaffolding
+<br>
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+```
+constructor(tService: TasksService) {
 
-## Build
+  }
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+TasksService - the type that serves as the so-called "Injection Token" which is used by Angular to identify the "thing" (e.g., the service) it should create and inject
 
-## Running unit tests
+<br>
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+One of the possible way (longer):
 
-## Running end-to-end tests
+```
+export class NewTaskComponent {
+  private formEl = viewChild<ElementRef<HTMLFormElement>>('form');
+  private tasksService: TasksService;
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+  constructor(tService: TasksService) {
+    this.tasksService = tService;
+  }
 
-## Further help
+  onAddTask(title: string, description: string) {
+    this.tasksService.addTask({title, description})
+    this.formEl()?.nativeElement.reset();
+  }
+}
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+We could simplify the code (The Angular creates property by itself):
+
+```
+export class NewTaskComponent {
+  private formEl = viewChild<ElementRef<HTMLFormElement>>('form');
+
+  constructor(private tasksService: TasksService) {
+
+  }
+
+  onAddTask(title: string, description: string) {
+    this.tasksService.addTask({title, description})
+    this.formEl()?.nativeElement.reset();
+  }
+}
+```
+
+Alternative way is using inject() function:
+
+```
+export class TasksListComponent {
+  private tasksService = inject(TasksService);
+  selectedFilter = signal<string>('all');
+  tasks = this.tasksService.allTasks;
+
+  onChangeTasksFilter(filter: string) {
+    this.selectedFilter.set(filter);
+  }
+}
+```
