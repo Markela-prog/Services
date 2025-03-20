@@ -148,3 +148,20 @@ export class TasksService {
 ```
 
 ***YOU CANNOT USE ELEMENT INJECTION FOR INJECTING SERVICE INTO SERVICE, BECAUSE ONLY COMPONENTS AND DIRECTIVE DO REACH OUT TO ELEMENT INJECTOR***
+
+## Custom DI token
+
+By default the Service class name is the DI token that we pass to inject function
+
+But we can create our own DI token:
+
+```
+import { InjectionToken } from '@angular/core';
+import { TasksService } from './app/tasks/tasks.service';
+
+const TasksServiceToken = new InjectionToken<TasksService>('tasks-service-token');
+
+bootstrapApplication(AppComponent, {
+    providers: [{provide: TasksServiceToken, useClass: TasksService}]
+}).catch((err) => console.error(err));
+```
