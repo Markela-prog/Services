@@ -97,9 +97,9 @@ We can provide services via Element Injector:
 })
 ```
 
-***Important thing, that if using Element Injector, the service is availabe only in the that component and its child components***
+**_Important thing, that if using Element Injector, the service is availabe only in the that component and its child components_**
 
-***Every instance of the component will get its own service instance***
+**_Every instance of the component will get its own service instance_**
 
 <hr>
 
@@ -147,7 +147,7 @@ export class TasksService {
 }
 ```
 
-***YOU CANNOT USE ELEMENT INJECTION FOR INJECTING SERVICE INTO SERVICE, BECAUSE ONLY COMPONENTS AND DIRECTIVE DO REACH OUT TO ELEMENT INJECTOR***
+**_YOU CANNOT USE ELEMENT INJECTION FOR INJECTING SERVICE INTO SERVICE, BECAUSE ONLY COMPONENTS AND DIRECTIVE DO REACH OUT TO ELEMENT INJECTOR_**
 
 ## Custom DI token
 
@@ -165,3 +165,105 @@ bootstrapApplication(AppComponent, {
     providers: [{provide: TasksServiceToken, useClass: TasksService}]
 }).catch((err) => console.error(err));
 ```
+
+## Non-class value injection
+
+You can not only inject classes but also inject values
+
+```
+import { InjectionToken, Provider } from "@angular/core";
+
+export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE';
+
+type TaskStatusOptions = {
+  value: 'open' | 'in-progress' | 'done';
+  taskStatus: TaskStatus;
+  text: string
+}[];
+
+
+export const TASK_STATUS_OPTIONS = new InjectionToken<TaskStatusOptions>('task-status-options');
+
+export const TaskStatusOptions: {
+  value: 'open' | 'in-progress' | 'done';
+  taskStatus: TaskStatus;
+  text: string
+}[] = [
+  {
+    value: 'open',
+    taskStatus: 'OPEN',
+    text: 'Open'
+  },
+  {
+    value: 'in-progress',
+    taskStatus: 'IN_PROGRESS',
+    text: 'In-progress'
+  },
+  {
+    value: 'done',
+    taskStatus: 'DONE',
+    text: 'Done'
+  },
+];
+
+export const taskStatusOptionsProvider: Provider = {
+  provide: TASK_STATUS_OPTIONS,
+  useValue: TaskStatusOptions
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+}
+```
+
+then in component class
+
+```
+@Component({
+  selector: 'app-tasks-list',
+  standalone: true,
+  templateUrl: './tasks-list.component.html',
+  styleUrl: './tasks-list.component.css',
+  imports: [TaskItemComponent],
+  providers: [taskStatusOptionsProvider]
+})
+export class TasksListComponent {
+  private tasksService = inject(TasksService);
+  private selectedFilter = signal<string>('all');
+  taskStatusOptions = inject(TASK_STATUS_OPTIONS);
+```
+
+and in template
+
+```
+<header>
+  <h2>My Tasks</h2>
+  <p>
+    <select (change)="onChangeTasksFilter(filter.value)" #filter>
+      <option value="all">All</option>
+      @for (option of taskStatusOptions; track option.value) {
+        <option [value]="option.value">{{ option.text }}</option>
+      }
+    </select>
+  </p>
+</header>
+```
+
+Also we can use it in child component
+
+```
+<form (ngSubmit)="onChangeTaskStatus(task().id, status.value)">
+    <select #status>
+      @for (option of taskStatusOptions; track option.value){
+        <option [value]="option.value" [selected]="task().status === option.taskStatus">{{ option.text }}</option>
+      }
+    </select>
+    <p>
+      <button>Change Status</button>
+    </p>
+  </form>
+```
+
